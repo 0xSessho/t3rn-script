@@ -2,6 +2,28 @@
 
 #!/bin/bash
 
+#!/bin/bash
+
+# Mostrar presentación con el nombre en ASCII con colores
+echo -e "\033[0;32m╔═══╗░░╔═══╗░░░░░░░░╔╗░╔╦═══╗"
+echo -e "\033[0;34m║╔═╗║░░║╔═╗║░░░░░░░░║║░║║╔═╗║"
+echo -e "\033[0;36m║║║║╠╗╔╣╚══╦══╦══╦══╣╚═╝║║░║║"
+echo -e "\033[0;35m║║║║╠╬╬╩══╗║║═╣══╣══╣╔═╗║║░║║"
+echo -e "\033[0;33m║╚═╝╠╬╬╣╚═╝║║═╬══╠══║║░║║╚═╝║"
+echo -e "\033[0;31m╚═══╩╝╚╩═══╩══╩══╩══╩╝░╚╩═══╝"
+echo -e "\033[0;32m░╔╗╔═══╗░░░░░░░░░░░░░░░░░╔╗░░"
+echo -e "\033[0;34m╔╝╚╣╔═╗║░░░░░░░░░░░░░░░╔╝╚╗░"
+echo -e "\033[0;36m╚╗╔╩╝╔╝╠═╦═╗░╔══╦══╦═╦╦═╩╗╔╝░"
+echo -e "\033[0;35m░║║╔╗╚╗║╔╣╔╗╗║══╣╔═╣╔╬╣╔╗║║░░"
+echo -e "\033[0;33m░║╚╣╚═╝║║║║║║╠══║╚═╣║║║╚╝║╚╗░"
+echo -e "\033[0;31m░╚═╩═══╩╝╚╝╚╝╚══╩══╩╝╚╣╔═╩═╝░"
+echo -e "\033[0;32m░░░░░░░░░░░░░░░░░░░░░░║║░░░░░"
+echo -e "\033[0;34m░░░░░░░░░░░░░░░░░░░░░░╚╝░░░░░"
+echo -e "\033[0m"  # Restablecer el color al predeterminado
+
+
+
+
 # Función para obtener la última versión de GitHub
 obtener_ultima_version() {
     echo "Obteniendo la última versión disponible..."
