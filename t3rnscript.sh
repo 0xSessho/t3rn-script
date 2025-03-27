@@ -1,3 +1,5 @@
+
+
 #!/bin/bash
 
 # Función para obtener la última versión de GitHub
@@ -84,6 +86,50 @@ seleccionar_redes() {
     echo "Redes habilitadas: $ENABLED_NETWORKS"
 }
 
+# Función para configurar RPC
+configurar_rpc() {
+    # RPC por defecto
+    DEFAULT_RPC_ENDPOINTS='{
+        "l2rn": ["https://b2n.rpc.caldera.xyz/http"],
+        "arbt": ["https://arbitrum-sepolia.drpc.org/", "https://sepolia-rollup.arbitrum.io/rpc"],
+        "bast": ["https://base-sepolia-rpc.publicnode.com/", "https://base-sepolia.drpc.org/"],
+        "opst": ["https://sepolia.optimism.io/", "https://optimism-sepolia.drpc.org/"],
+        "unit": ["https://unichain-sepolia.drpc.org/", "https://sepolia.unichain.org/"]
+    }'
+
+    echo "¿Desea usar RPC por defecto (1) o RPC privados (Alchemy) (2)?"
+    echo "Para usar RPC privados (Alchemy), necesita su API key y los URL de RPC."
+    read -p "Ingrese su opción (1 o 2): " RPC_OPCION
+
+    if [ "$RPC_OPCION" -eq 1 ]; then
+        export RPC_ENDPOINTS="$DEFAULT_RPC_ENDPOINTS"
+    elif [ "$RPC_OPCION" -eq 2 ]; then
+        echo "Ingrese los RPC para cada red (deje vacío para usar los predeterminados):"
+        
+        read -p "Ingrese RPC para Arbitrum Sepolia: " RPC_ARBITRUM
+        read -p "Ingrese RPC para Base Sepolia: " RPC_BASE
+        read -p "Ingrese RPC para Optimism Sepolia: " RPC_OPTIMISM
+        read -p "Ingrese RPC para Unichain Sepolia: " RPC_UNICHAIN
+
+        # Comprobamos si los RPC son válidos
+        RPC_ARBITRUM=${RPC_ARBITRUM:-"https://arbitrum-sepolia.drpc.org/"}  # Usar el predeterminado si está vacío
+        RPC_BASE=${RPC_BASE:-"https://base-sepolia-rpc.publicnode.com/"}  # Usar el predeterminado si está vacío
+        RPC_OPTIMISM=${RPC_OPTIMISM:-"https://sepolia.optimism.io/"}  # Usar el predeterminado si está vacío
+        RPC_UNICHAIN=${RPC_UNICHAIN:-"https://unichain-sepolia.drpc.org/"}  # Usar el predeterminado si está vacío
+        
+        export RPC_ENDPOINTS="{
+            \"l2rn\": [\"https://b2n.rpc.caldera.xyz/http\"],
+            \"arbt\": [\"$RPC_ARBITRUM\"],
+            \"bast\": [\"$RPC_BASE\"],
+            \"opst\": [\"$RPC_OPTIMISM\"],
+            \"unit\": [\"$RPC_UNICHAIN\"]
+        }"
+    else
+        echo "Opción inválida. Saliendo."
+        exit 1
+    fi
+}
+
 # Elegir la versión antes de la instalación
 elegir_version
 
@@ -117,13 +163,25 @@ if [ "$INSTALACION_OPCION" -eq 1 ]; then
     export EXECUTOR_MAX_L3_GAS_PRICE=1000
 else
     echo "Instalación personalizada seleccionada."
-    seleccionar_redes  # Llamada a la función de selección de redes
-    read -p "Procesar órdenes? (true/false): " EXECUTOR_PROCESS_ORDERS
-    export EXECUTOR_PROCESS_ORDERS
-    read -p "Procesar claims? (true/false): " EXECUTOR_PROCESS_CLAIMS
-    export EXECUTOR_PROCESS_CLAIMS
-    read -p "Usar API de T3RN para órdenes pendientes? (true/false): " EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API
-    export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API
+    # Preguntar si se desea usar la API de T3RN
+    echo "¿Desea usar la API de T3RN para procesar órdenes pendientes?"
+    echo "1) Sí"
+    echo "2) No"
+    read -p "Ingrese su opción (1 o 2): " API_OPCION
+    
+    if [ "$API_OPCION" -eq 1 ]; then
+        export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=false
+    elif [ "$API_OPCION" -eq 2 ]; then
+        export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=true
+        # Si no se usa la API, configurar RPC
+        configurar_rpc
+    else
+        echo "Selección inválida. Saliendo."
+        exit 1
+    fi
+
+    # Seleccionar redes habilitadas
+    seleccionar_redes
 fi
 
 # Solicitar clave privada
@@ -133,6 +191,3 @@ export PRIVATE_KEY_LOCAL
 
 echo "Configuración finalizada. Ejecutando el nodo..."
 ./executor
-
-
-
