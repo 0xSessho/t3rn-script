@@ -37,6 +37,11 @@ install_executor() {
     tar -xvzf "$EXECUTOR_ARCHIVE"
     chmod +x executor
     rm "$EXECUTOR_ARCHIVE"
+
+    if [ ! -f "executor" ]; then
+        echo "Error: executor file not found after extraction. Exiting."
+        exit 1
+    fi
 }
 
 # Function to verify if a version exists on GitHub
@@ -81,25 +86,6 @@ choose_version() {
     fi
 }
 
-# Function to configure RPC endpoints
-configure_rpc() {
-    echo -e "\033[1;33mDo you want to use private RPCs (Alchemy) (1) or default RPCs (2)?\033[0m"
-    read -p "Enter your choice (1 or 2): " RPC_OPTION
-
-    if [ "$RPC_OPTION" -eq 1 ]; then
-        echo "Enter the RPC endpoints for each network (leave blank to use defaults):"
-        read -p "Enter RPC for Arbitrum Sepolia: " RPC_ARBITRUM
-        read -p "Enter RPC for Base Sepolia: " RPC_BASE
-        read -p "Enter RPC for Optimism Sepolia: " RPC_OPTIMISM
-        read -p "Enter RPC for Unichain Sepolia: " RPC_UNICHAIN
-
-        RPC_ARBITRUM=${RPC_ARBITRUM:-"https://arbitrum-sepolia.drpc.org/"}
-        RPC_BASE=${RPC_BASE:-"https://base-sepolia-rpc.publicnode.com/"}
-        RPC_OPTIMISM=${RPC_OPTIMISM:-"https://sepolia.optimism.io/"}
-        RPC_UNICHAIN=${RPC_UNICHAIN:-"https://unichain-sepolia.drpc.org/"}
-    fi
-}
-
 # Choose version before installation
 choose_version
 
@@ -119,7 +105,6 @@ if [ "$INSTALL_OPTION" -eq 2 ]; then
         export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=true
     elif [ "$API_OPTION" -eq 2 ]; then
         export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=false
-        configure_rpc
     else
         echo "Invalid selection. Exiting."
         exit 1
@@ -127,11 +112,15 @@ if [ "$INSTALL_OPTION" -eq 2 ]; then
 fi
 
 if [ ! -f "executor" ]; then
-    echo "Error: executor file not found. Installation might have failed. Exiting."
+    echo "Error: executor file not found. Checking directory contents..."
+    ls -l
+    echo "Exiting."
     exit 1
 fi
 
+# Verify permissions and execute
+chmod +x executor
+
 echo "Configuration complete. Running the node..."
 ./executor
-
 
