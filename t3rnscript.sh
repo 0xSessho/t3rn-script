@@ -189,9 +189,9 @@ else
     read -p "Ingrese su opción (1 o 2): " API_OPCION
     
     if [ "$API_OPCION" -eq 1 ]; then
-        export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=false
-    elif [ "$API_OPCION" -eq 2 ]; then
         export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=true
+    elif [ "$API_OPCION" -eq 2 ]; then
+        export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=false
         # Si no se usa la API, configurar RPC
         configurar_rpc
     else
