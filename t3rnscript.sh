@@ -14,11 +14,16 @@ obtener_ultima_version() {
 # Función para verificar si la versión existe en GitHub
 verificar_version() {
     VERSION_TO_CHECK=$1
+    # Si la versión es "0.55", reemplazamos con "0.55.0"
+    if [[ "$VERSION_TO_CHECK" == "0.55" ]]; then
+        VERSION_TO_CHECK="0.55.0"
+    fi
+    
     # Revisar si la versión existe
     RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "https://github.com/t3rn/executor-release/releases/download/v$VERSION_TO_CHECK/executor-linux-v$VERSION_TO_CHECK.tar.gz")
     
     if [ "$RESPONSE" -eq 404 ]; then
-        echo "Error: La versión v$VERSION_TO_CHECK no está disponible. Por favor, elija una versión válida."
+        echo "Error, versión no disponible o datos erróneos."
         exit 1
     fi
 }
@@ -127,4 +132,5 @@ export PRIVATE_KEY_LOCAL
 
 echo "Configuración finalizada. Ejecutando el nodo..."
 ./executor
+
 
