@@ -20,6 +20,25 @@ get_latest_version() {
     echo "Latest version found: v$LATEST_VERSION"
 }
 
+# Function to download and extract the executor
+install_executor() {
+    EXECUTOR_URL="https://github.com/t3rn/executor-release/releases/download/v$LATEST_VERSION/executor-linux-v$LATEST_VERSION.tar.gz"
+    EXECUTOR_ARCHIVE="executor-linux-v$LATEST_VERSION.tar.gz"
+
+    echo "Downloading executor from $EXECUTOR_URL..."
+    curl -L -o "$EXECUTOR_ARCHIVE" "$EXECUTOR_URL"
+
+    if [ ! -f "$EXECUTOR_ARCHIVE" ]; then
+        echo "Error: Failed to download executor. Exiting."
+        exit 1
+    fi
+
+    echo "Extracting executor..."
+    tar -xvzf "$EXECUTOR_ARCHIVE"
+    chmod +x executor
+    rm "$EXECUTOR_ARCHIVE"
+}
+
 # Function to verify if a version exists on GitHub
 verify_version() {
     VERSION_TO_CHECK=$1
@@ -64,20 +83,11 @@ choose_version() {
 
 # Function to configure RPC endpoints
 configure_rpc() {
-    DEFAULT_RPC_ENDPOINTS='{
-        "l2rn": ["https://b2n.rpc.caldera.xyz/http"],
-        "arbt": ["https://arbitrum-sepolia.drpc.org/", "https://sepolia-rollup.arbitrum.io/rpc"],
-        "bast": ["https://base-sepolia-rpc.publicnode.com/", "https://base-sepolia.drpc.org/"],
-        "opst": ["https://sepolia.optimism.io/", "https://optimism-sepolia.drpc.org/"],
-        "unit": ["https://unichain-sepolia.drpc.org/", "https://sepolia.unichain.org/"]
-    }'
-
     echo -e "\033[1;33mDo you want to use private RPCs (Alchemy) (1) or default RPCs (2)?\033[0m"
     read -p "Enter your choice (1 or 2): " RPC_OPTION
 
     if [ "$RPC_OPTION" -eq 1 ]; then
         echo "Enter the RPC endpoints for each network (leave blank to use defaults):"
-        
         read -p "Enter RPC for Arbitrum Sepolia: " RPC_ARBITRUM
         read -p "Enter RPC for Base Sepolia: " RPC_BASE
         read -p "Enter RPC for Optimism Sepolia: " RPC_OPTIMISM
@@ -87,24 +97,14 @@ configure_rpc() {
         RPC_BASE=${RPC_BASE:-"https://base-sepolia-rpc.publicnode.com/"}
         RPC_OPTIMISM=${RPC_OPTIMISM:-"https://sepolia.optimism.io/"}
         RPC_UNICHAIN=${RPC_UNICHAIN:-"https://unichain-sepolia.drpc.org/"}
-        
-        export RPC_ENDPOINTS="{
-            \"l2rn\": [\"https://b2n.rpc.caldera.xyz/http\"],
-            \"arbt\": [\"$RPC_ARBITRUM\"],
-            \"bast\": [\"$RPC_BASE\"],
-            \"opst\": [\"$RPC_OPTIMISM\"],
-            \"unit\": [\"$RPC_UNICHAIN\"]
-        }"
-    elif [ "$RPC_OPTION" -eq 2 ]; then
-        export RPC_ENDPOINTS="$DEFAULT_RPC_ENDPOINTS"
-    else
-        echo "Invalid option. Exiting."
-        exit 1
     fi
 }
 
 # Choose version before installation
 choose_version
+
+# Install executor
+install_executor
 
 # Choose installation type
 choose_installation
@@ -119,13 +119,19 @@ if [ "$INSTALL_OPTION" -eq 2 ]; then
         export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=true
     elif [ "$API_OPTION" -eq 2 ]; then
         export EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=false
-        configure_rpc  # Ensure RPC configuration runs if API is not used
+        configure_rpc
     else
         echo "Invalid selection. Exiting."
         exit 1
     fi
 fi
 
+if [ ! -f "executor" ]; then
+    echo "Error: executor file not found. Installation might have failed. Exiting."
+    exit 1
+fi
+
 echo "Configuration complete. Running the node..."
 ./executor
+
 
