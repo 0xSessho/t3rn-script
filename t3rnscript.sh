@@ -1,8 +1,6 @@
 
 #!/bin/bash
 
-#!/bin/bash
-
 # Mostrar presentación con el nombre en ASCII en 3 partes con colores azul y rojo
 echo -e "\033[0;34m╔═══╗░░╔═══╗░░░░░░░░╔╗░╔╦═══╗"
 echo -e "\033[0;31m║╔═╗║░░║╔═╗║░░░░░░░░║║░║║╔═╗║"
@@ -52,17 +50,17 @@ verificar_version() {
 
 # Función para mostrar el menú de instalación
 elegir_configuracion() {
-    echo "Seleccione el tipo de instalación:"
-    echo "1) Instalación por defecto"
-    echo "2) Instalación personalizada"
+    echo -e "\033[1;33mSeleccione el tipo de instalación:\033[0m"
+    echo -e "1) \033[0;32mInstalación por defecto\033[0m"
+    echo -e "2) \033[0;31mInstalación personalizada\033[0m"
     read -p "Ingrese su opción (1 o 2): " INSTALACION_OPCION
 }
 
 # Preguntar al usuario qué versión desea instalar
 elegir_version() {
-    echo "Seleccione la versión a instalar:"
-    echo "1) Última versión disponible"
-    echo "2) Versión específica"
+    echo -e "\033[1;33mSeleccione la versión a instalar:\033[0m"
+    echo -e "1) \033[0;32mÚltima versión disponible\033[0m"
+    echo -e "2) \033[0;31mVersión específica\033[0m"
     read -p "Ingrese su opción (1 o 2): " VERSION_OPCION
 
     if [ "$VERSION_OPCION" -eq 1 ]; then
@@ -79,13 +77,16 @@ elegir_version() {
 # Función para seleccionar las redes habilitadas
 seleccionar_redes() {
     ENABLED_NETWORKS='l2rn'  # Red fija
-    echo "Seleccione las redes que desea habilitar (separadas por espacios):"
+    echo -e "\033[1;33mSeleccione las redes que desea habilitar (separadas por comas):\033[0m"
     echo "1) Base Sepolia"
     echo "2) Arbitrum Sepolia"
     echo "3) Optimism Sepolia"
     echo "4) Unichain Sepolia"
-    echo "Ingrese las opciones separadas por espacios (por ejemplo: 1 3):"
-    read -a REDES_SELECCIONADAS
+    echo -e "\033[1;33mIngrese las opciones separadas por comas (por ejemplo: 1,3):\033[0m"
+    read -p "Redes seleccionadas: " REDES
+
+    # Separar las redes por comas y asignar al array
+    IFS=',' read -r -a REDES_SELECCIONADAS <<< "$REDES"
 
     for opcion in "${REDES_SELECCIONADAS[@]}"; do
         case $opcion in
@@ -116,13 +117,10 @@ configurar_rpc() {
         "unit": ["https://unichain-sepolia.drpc.org/", "https://sepolia.unichain.org/"]
     }'
 
-    echo "¿Desea usar RPC por defecto (1) o RPC privados (Alchemy) (2)?"
-    echo "Para usar RPC privados (Alchemy), necesita su API key y los URL de RPC."
+    echo -e "\033[1;33m¿Desea usar RPC privados (Alchemy) (1) o RPC por defecto (2)?\033[0m"
     read -p "Ingrese su opción (1 o 2): " RPC_OPCION
 
     if [ "$RPC_OPCION" -eq 1 ]; then
-        export RPC_ENDPOINTS="$DEFAULT_RPC_ENDPOINTS"
-    elif [ "$RPC_OPCION" -eq 2 ]; then
         echo "Ingrese los RPC para cada red (deje vacío para usar los predeterminados):"
         
         read -p "Ingrese RPC para Arbitrum Sepolia: " RPC_ARBITRUM
@@ -143,6 +141,8 @@ configurar_rpc() {
             \"opst\": [\"$RPC_OPTIMISM\"],
             \"unit\": [\"$RPC_UNICHAIN\"]
         }"
+    elif [ "$RPC_OPCION" -eq 2 ]; then
+        export RPC_ENDPOINTS="$DEFAULT_RPC_ENDPOINTS"
     else
         echo "Opción inválida. Saliendo."
         exit 1
@@ -183,9 +183,9 @@ if [ "$INSTALACION_OPCION" -eq 1 ]; then
 else
     echo "Instalación personalizada seleccionada."
     # Preguntar si se desea usar la API de T3RN
-    echo "¿Desea usar la API de T3RN para procesar órdenes pendientes?"
-    echo "1) Sí"
-    echo "2) No"
+    echo -e "\033[1;33m¿Desea usar la API de T3RN para procesar órdenes pendientes?\033[0m"
+    echo -e "1) \033[0;32mSí\033[0m"
+    echo -e "2) \033[0;31mNo\033[0m"
     read -p "Ingrese su opción (1 o 2): " API_OPCION
     
     if [ "$API_OPCION" -eq 1 ]; then
@@ -204,7 +204,7 @@ else
 fi
 
 # Solicitar clave privada
-echo "Ingrese su clave privada:"
+echo -e "\033[1;33mIngrese su clave privada:\033[0m"
 read -s PRIVATE_KEY_LOCAL
 export PRIVATE_KEY_LOCAL
 
