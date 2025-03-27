@@ -11,6 +11,18 @@ obtener_ultima_version() {
     echo "Última versión encontrada: v$LATEST_VERSION"
 }
 
+# Función para verificar si la versión existe en GitHub
+verificar_version() {
+    VERSION_TO_CHECK=$1
+    # Revisar si la versión existe
+    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "https://github.com/t3rn/executor-release/releases/download/v$VERSION_TO_CHECK/executor-linux-v$VERSION_TO_CHECK.tar.gz")
+    
+    if [ "$RESPONSE" -eq 404 ]; then
+        echo "Error: La versión v$VERSION_TO_CHECK no está disponible. Por favor, elija una versión válida."
+        exit 1
+    fi
+}
+
 # Función para mostrar el menú de instalación
 elegir_configuracion() {
     echo "Seleccione el tipo de instalación:"
@@ -30,6 +42,7 @@ elegir_version() {
         obtener_ultima_version
     elif [ "$VERSION_OPCION" -eq 2 ]; then
         read -p "Ingrese la versión específica (ejemplo: 0.53.1): " LATEST_VERSION
+        verificar_version "$LATEST_VERSION"  # Verificar que la versión existe
     else
         echo "Selección inválida. Saliendo."
         exit 1
@@ -114,3 +127,4 @@ export PRIVATE_KEY_LOCAL
 
 echo "Configuración finalizada. Ejecutando el nodo..."
 ./executor
+
